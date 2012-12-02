@@ -3,3 +3,5 @@
 SHINGLE_LENGTH = 10
 
 CONNECT_STRING = "mysql://root:root@localhost/shingles"
+
+from settings_local import *
