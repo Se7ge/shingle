@@ -16,7 +16,7 @@ class Parse_Text:
         return words_tuple
 
 class Canonize_Text:
-    morphy = get_morph(os.path.join(os.path.dirname(__file__),'dicts'))
+    morphy = get_morph(os.path.join(os.path.dirname(__file__),'dicts', 'ru'))
 
     def __init__(self, string):
         self.string = string
