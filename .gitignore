@@ -1,3 +1,4 @@
 tmp.py
 .idea*
 settings_local.py
+*.pyc

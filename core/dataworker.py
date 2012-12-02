@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from settings import CONNECT_STRING
 from parser import *
 from shingle import Shingles
+from keywords import Keywords
 
 Base = declarative_base()
 
@@ -16,6 +17,7 @@ class News_Sources(Base):
     name = Column(String)
     url = Column(String)
     rss_url = Column(String)
+    lang = Column(String)
 
 class News(Base):
     __tablename__ = 'news'
@@ -99,6 +101,16 @@ class Data_Worker:
         else:
             self.session.commit()
 
+    def insert_keywords(self, news_id, keywords):
+        try:
+        #            TODO: self.session.add_all()
+            for keyword, _data in keywords:
+                self.session.add(News_Keywords(news_id, keyword, _data['crc32_hash'], _data['number']))
+        except:
+            self.session.rollback()
+        else:
+            self.session.commit()
+
     def run_import(self):
         for source in self.get_sources():
             try:
@@ -106,12 +118,15 @@ class Data_Worker:
                 _parser = _parser_class(source.rss_url)
                 for news in _parser.parse_news():
                     if news['content']:
-                        news_words = Parse_Text.parse(news['content'])
-                        shingles = Shingles.generate(news['content'])
+                        news_words = Parse_Text.parse(news['content'], lang = source.lang)
+                        print news_words
+                        shingles = Shingles.generate(news_words)
+                        keywords_weight = Keywords.get_weights(news_words)
                         news['source_id'] = source.id
                         news_id = self.insert_news(news)
                         if news_id:
                             self.insert_shingles(news_id, shingles)
+                            self.insert_keywords(news_id, keywords_weight)
             except ValueError:
                 pass
 

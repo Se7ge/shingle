@@ -9,19 +9,21 @@ import feedparser
 class Parse_Text:
 
     @staticmethod
-    def parse(string):
-        words_tuple = []
+    def parse(string, lang='ru'):
+        words_list = []
         if string:
-            words_tuple = Canonize_Text(string).canonize()
-        return words_tuple
+            words_list = Canonize_Text(string, lang).canonize()
+        return words_list
 
 class Canonize_Text:
-    morphy = get_morph(os.path.join(os.path.dirname(__file__),'dicts', 'ru'))
 
-    def __init__(self, string):
+    def __init__(self, string, lang='ru'):
         self.string = string
+        self.morphy = get_morph(os.path.join(os.path.dirname(__file__),'dicts', lang))
 
     def clear_tags(self, string):
+#        return string
+        # TODO: clear_tags
         safe_attrs = clean.defs.safe_attrs
         clean.defs.safe_attrs = frozenset()
         cleaner = clean.Cleaner(safe_attrs_only=True)
@@ -34,9 +36,9 @@ class Canonize_Text:
 
     def canonize(self):
         if self.string:
-            return ( [x for x in [self.morphy_process(y.strip(self.get_stop_symbols()))
-                                  for y in self.clear_tags(self.string).upper().split()]
-                      if x and (x not in self.get_stopwords())] )
+            return ( [list(x)[0] for x in [self.morphy_process(y)
+                                  for y in self.clear_tags(self.string.strip(self.get_stop_symbols())).upper().split()]
+                      if x and (x not in self.get_stopwords()) ])
         else:
             return ""
 
